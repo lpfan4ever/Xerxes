@@ -98,7 +98,7 @@ int main(int argc, char **argv) {
 	int x;
 	int modus;
 	char ip[30];
-	int port[6]; 
+	char port[6]; 
 
 	printf("Modus: 0=UDP 1=TCP with HTTP Requests\n");
 	scanf("%d", &modus);
