@@ -109,7 +109,7 @@ int main(int argc, char **argv)
 	printf("Modus: 0=UDP 1=TCP with HTTP Requests\n");
 	scanf("%d", &modus);
 	printf("Destination IP?\n");
-    scanf("%s", &ip);
+	scanf("%s", &ip);
 	printf("Destination Port?\n");
     scanf("%s",&port);
 	printf("Connections?\n");
