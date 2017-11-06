@@ -96,7 +96,7 @@ void attack(char *host, char *port, int id, int modus)
 			fprintf(stderr, "Thread:%i Connection:%d %s", id,x,s_copy);
 			x++;
 		}
-		usleep(300000);
+		usleep(100000);
 	}
 }
 int force(char *host, int modus, char *port)
